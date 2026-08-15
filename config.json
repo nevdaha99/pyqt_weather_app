@@ -1,0 +1,13 @@
+{
+    "list_city": [
+        "Nadtochiyi",
+        "Днепр",
+        "Харьков",
+        "Запорожье",
+        "Лондон",
+        "Tokio",
+        "Виница"
+    ],
+    "selected_city": "Nadtochiyi",
+    "is_dark": false
+}
