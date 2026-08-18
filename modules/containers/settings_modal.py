@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import *
 from modules.utils.saving_config import get_config
 
 from ..app import app
-from ..image import ImageWidget
+from ..image import ImageWidget, QPixmap
 
 config = get_config()
 list_city = config["list_city"]
@@ -20,6 +20,7 @@ class SettingsModal(QWidget):
     coordinates_changed = pyqtSignal(float, float)
     city_deleted = pyqtSignal(str)
     size_app = pyqtSignal(str)
+    pack_changed = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -144,7 +145,7 @@ class SettingsModal(QWidget):
         coordinat_layout.addWidget(
             control_frame, alignment=Qt.AlignmentFlag.AlignTop
         )
-
+        # поиск по координатам
         search_title = QLabel("Пошук міста")
         search_title.setStyleSheet("font-size: 18px")
         coordinat_title = QLabel("Координати")
@@ -248,14 +249,12 @@ class SettingsModal(QWidget):
         """)
         self.add_found_city()
 
-        # added_city_layout.addWidget(self.list_city_frame)
         self.scrolll.setWidget(self.list_city_frame)
 
         added_city_layout.addWidget(self.scrolll)
-        ###############################################################################
         self.pages = QStackedWidget()
         self.pages.addWidget(search_city_frame)
-
+        # смена размеров приложения
         self.size_page = QWidget()
         size_layout = QVBoxLayout(self.size_page)
         size_layout.setContentsMargins(8, 0, 0, 0)
@@ -357,11 +356,10 @@ class SettingsModal(QWidget):
         size_layout.addStretch()
 
         self.pages.addWidget(self.size_page)
-        ##########################################################
         self.language_page = QWidget()
         language_layout = QVBoxLayout(self.language_page)
         language_layout.setContentsMargins(0, 0, 0, 0)
-
+        # язык приложения
         language_title = QLabel("Мова додатку")
         language_title.setStyleSheet("font-size: 18px;")
 
@@ -373,14 +371,280 @@ class SettingsModal(QWidget):
         self.images_page = QWidget()
         images_layout = QVBoxLayout(self.images_page)
         images_layout.setContentsMargins(0, 0, 0, 0)
+        # смена пака картинок
+        self.images_page = QWidget()
+        images_layout = QVBoxLayout(self.images_page)
+        images_layout.setContentsMargins(0, 0, 0, 0)
+        images_layout.setSpacing(0)
+        images_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         images_title = QLabel("Списки зображень")
-        images_title.setStyleSheet("font-size: 18px;")
+        images_title.setFixedHeight(30)
+
+        images_title.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 20px;
+                background-color: transparent;
+            }
+        """)
 
         images_layout.addWidget(images_title)
+        images_layout.addSpacing(15)
+
+        self.pack_group = QButtonGroup(self)
+        self.pack_group.setExclusive(True)
+
+        list1_header = QHBoxLayout()
+        list1_header.setContentsMargins(0, 0, 0, 0)
+
+        list1_title = QLabel("Список зображень №1")
+        list1_title.setFixedHeight(22)
+
+        list1_title.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 15px;
+                background-color: transparent;
+            }
+        """)
+
+        self.pack1_radio = QRadioButton()
+        self.pack1_radio.setChecked(True)
+
+        self.pack1_radio.setStyleSheet("""
+            QRadioButton {
+                background-color: transparent;
+            }
+
+            QRadioButton::indicator {
+                width: 14px;
+                height: 14px;
+                border-radius: 7px;
+                border: 1px solid white;
+                background-color: transparent;
+            }
+
+            QRadioButton::indicator:checked {
+                background-color: white;
+                border: 1px solid white;
+            }
+        """)
+
+        self.pack_group.addButton(self.pack1_radio)
+
+        list1_header.addWidget(list1_title)
+        list1_header.addStretch()
+        list1_header.addWidget(self.pack1_radio)
+
+        images_layout.addLayout(list1_header)
+        images_layout.addSpacing(10)
+
+        list1_frame = QFrame()
+        list1_frame.setFixedSize(490, 137)
+
+        list1_frame.setStyleSheet("""
+            QFrame {
+                background-color: rgba(0, 0, 0, 55);
+                border-radius: 6px;
+            }
+        """)
+
+        list1_layout = QHBoxLayout(list1_frame)
+        list1_layout.setContentsMargins(15, 15, 15, 15)
+        list1_layout.setSpacing(22)
+
+        list1_images = [
+            "images/icons/main/pack1/01d.png",
+            "images/icons/main/pack1/02d.png",
+            "images/icons/main/pack1/09d.png",
+            "images/icons/main/pack1/03n.png",
+            "images/icons/main/pack1/04n.png",
+        ]
+
+        for path in list1_images:
+            image_frame = QFrame()
+            image_frame.setFixedSize(74, 74)
+
+            image_frame.setStyleSheet("""
+                QFrame {
+                    background-color: rgba(255, 255, 255, 0.18);
+                    border-radius: 8px;
+                }
+            """)
+
+            image_layout = QVBoxLayout(image_frame)
+            image_layout.setContentsMargins(5, 5, 5, 5)
+            image_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            image_label = QLabel()
+            image_label.setFixedSize(64, 64)
+            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            image_label.setStyleSheet("""
+                QLabel {
+                    background-color: transparent;
+                }
+            """)
+
+            pixmap = QPixmap(path)
+
+            if not pixmap.isNull():
+                pixmap = pixmap.scaled(
+                    65,
+                    65,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+
+                image_label.setPixmap(pixmap)
+
+            image_layout.addWidget(image_label)
+            list1_layout.addWidget(image_frame)
+
+        images_layout.addWidget(list1_frame)
+
+        images_layout.addSpacing(25)
+
+        list2_header = QHBoxLayout()
+        list2_header.setContentsMargins(0, 0, 0, 0)
+
+        list2_title = QLabel("Список зображень №2")
+        list2_title.setFixedHeight(22)
+
+        list2_title.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 15px;
+                background-color: transparent;
+            }
+        """)
+
+        self.pack2_radio = QRadioButton()
+
+        self.pack2_radio.setStyleSheet("""
+            QRadioButton {
+                background-color: transparent;
+            }
+
+            QRadioButton::indicator {
+                width: 14px;
+                height: 14px;
+                border-radius: 7px;
+                border: 1px solid white;
+                background-color: transparent;
+            }
+
+            QRadioButton::indicator:checked {
+                background-color: white;
+                border: 1px solid white;
+            }
+        """)
+
+        self.pack_group.addButton(self.pack2_radio)
+
+        list2_header.addWidget(list2_title)
+        list2_header.addStretch()
+        list2_header.addWidget(self.pack2_radio)
+
+        images_layout.addLayout(list2_header)
+        images_layout.addSpacing(10)
+
+        list2_frame = QFrame()
+        list2_frame.setFixedSize(490, 137)
+
+        list2_frame.setStyleSheet("""
+            QFrame {
+                background-color: rgba(0, 0, 0, 55);
+                border-radius: 6px;
+            }
+        """)
+
+        list2_layout = QHBoxLayout(list2_frame)
+        list2_layout.setContentsMargins(15, 15, 15, 15)
+        list2_layout.setSpacing(22)
+
+        list2_images = [
+            "images/icons/main/pack2/01d.png",
+            "images/icons/main/pack2/02d.png",
+            "images/icons/main/pack2/09d.png",
+            "images/icons/main/pack2/03n.png",
+            "images/icons/main/pack2/04n.png",
+        ]
+
+        for path in list2_images:
+            image_frame = QFrame()
+            image_frame.setFixedSize(74, 74)
+
+            image_frame.setStyleSheet("""
+                QFrame {
+                    background-color: rgba(255, 255, 255, 0.18);
+                    border-radius: 8px;
+                }
+            """)
+
+            image_layout = QVBoxLayout(image_frame)
+            image_layout.setContentsMargins(5, 5, 5, 5)
+            image_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            image_label = QLabel()
+            image_label.setFixedSize(64, 64)
+            image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+            image_label.setStyleSheet("""
+                QLabel {
+                    background-color: transparent;
+                }
+            """)
+
+            pixmap = QPixmap(path)
+
+            if not pixmap.isNull():
+                pixmap = pixmap.scaled(
+                    65,
+                    65,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+
+                image_label.setPixmap(pixmap)
+
+            image_layout.addWidget(image_label)
+            list2_layout.addWidget(image_frame)
+
+        images_layout.addWidget(list2_frame)
+
+        images_layout.addSpacing(15)
+
+        self.save_pack_button = QPushButton("Зберегти")
+        self.save_pack_button.setFixedSize(105, 38)
+
+        self.save_pack_button.setStyleSheet("""
+            QPushButton {
+                background-color: #0F0F0F;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            QPushButton:hover {
+                background-color: #1A1A1A;
+            }
+
+            QPushButton:pressed {
+                background-color: #050505;
+            }
+        """)
+
+        self.save_pack_button.clicked.connect(self.save_selected_pack)
+
+        images_layout.addWidget(self.save_pack_button)
+
         images_layout.addStretch()
 
         self.pages.addWidget(self.images_page)
+
         content_layout.addWidget(
             self.pages, alignment=Qt.AlignmentFlag.AlignTop
         )
@@ -511,3 +775,10 @@ class SettingsModal(QWidget):
             return
         selected_size = selected_button.text()
         self.size_app.emit(selected_size)
+
+    def save_selected_pack(self):
+        if self.pack1_radio.isChecked():
+            self.pack_changed.emit("pack1")
+
+        elif self.pack2_radio.isChecked():
+            self.pack_changed.emit("pack2")

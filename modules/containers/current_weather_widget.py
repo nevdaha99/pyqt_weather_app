@@ -19,6 +19,7 @@ class CurrentWeatherWidget(QFrame):
         max_temperature: int,
         min_temperature: int,
         image,
+        icon,
     ):
         super().__init__()
 
@@ -35,7 +36,7 @@ class CurrentWeatherWidget(QFrame):
                 color: white;
             }
         """)
-
+        self.pack = "pack1"
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 15, 20, 15)
 
@@ -71,7 +72,7 @@ class CurrentWeatherWidget(QFrame):
         city_layout = QHBoxLayout(city_widget)
         city_layout.setSpacing(16)
         city_layout.addWidget(self.city_label)
-
+        self.icon = icon
         self.image_label = ImageWidget(250, 250, image)
         self.image_label.setStyleSheet("""
             background: transparent;
@@ -139,8 +140,8 @@ class CurrentWeatherWidget(QFrame):
             f"Макс.:{data['max_temperature']}°, "
             f"мін.:{data['min_temperature']}°"
         )
-
         self.image_label.set_image(data["image"])
+        # self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")
 
     def change_theme(self, is_dark: bool):
         if is_dark:
@@ -181,3 +182,39 @@ class CurrentWeatherWidget(QFrame):
 
         elif size == "1728x1117":
             self.setFixedSize(553, 352)
+
+    # def update_pack(self, pack_name):
+    #     self.pack = pack_name
+    #     self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")
+    #     if self.pack == "pack1":
+    #         self.image_label.setFixedSize(250, 250)
+    #         self.image_label.setStyleSheet("""
+    #         background: transparent;
+    #         margin-top: -150px;
+    #         margin-left: -40px;
+    #     """)
+
+    #     elif self.pack == "pack2":
+    #         self.image_label.setFixedSize(100, 100)
+    #         self.image_label.setStyleSheet("""
+    #         background: transparent;
+    #         margin-left: -80px;
+    #     """)
+    def update_pack(self, pack_name):
+        self.pack = pack_name
+        if self.pack == "pack1":
+            self.image_label.set_image_size(250, 250)
+            self.image_label.setStyleSheet("""
+                background: transparent;
+                margin-top: -150px;
+                margin-left: -40px;
+            """)
+
+        elif self.pack == "pack2":
+            self.image_label.set_image_size(100, 100)
+            self.image_label.setStyleSheet("""
+                background: transparent;
+                margin-top: 0px;
+                margin-left: 20px;
+            """)
+        self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")

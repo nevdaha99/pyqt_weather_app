@@ -25,7 +25,7 @@ class SidePanel(QWidget):
         self.left_layout.setSpacing(10)
         self.left_layout.setContentsMargins(20, 20, 20, 20)
         self.left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-
+        self.pack = "pack1"
         self.is_dark = is_dark
         self.theme = ImageWidget(
             52,
@@ -52,7 +52,6 @@ class SidePanel(QWidget):
         )
         if temp == None:
             return
-
         city_element = TrackedCity(
             city=city,
             time=time,
@@ -60,7 +59,7 @@ class SidePanel(QWidget):
             temperature=temp,
             max_temperature=temp_max,
             min_temperature=temp_min,
-            image=f"icons/main/{icon}.png",
+            image=f"icons/main/{self.pack}/{icon}.png",
             selected=city == config["selected_city"],
             layout=self.left_layout,
             list_city=self.added_city,
@@ -98,7 +97,7 @@ class SidePanel(QWidget):
             temperature=temp,
             max_temperature=temp_max,
             min_temperature=temp_min,
-            image=f"icons/main/{icon}.png",
+            image=f"icons/main/{self.pack}/{icon}.png",
             selected=city == config["selected_city"],
             layout=self.left_layout,
             list_city=self.added_city,
@@ -163,3 +162,11 @@ class SidePanel(QWidget):
 
         elif size == "1728x1117":
             self.setFixedSize(510, 1117)
+
+    def update_pack(self, pack_name):
+        self.pack = pack_name
+
+        for city_widget in self.city_widgets:
+            icon = city_widget.weather_data["image"].split("/")[-1]
+
+            city_widget.update_image(f"icons/main/{self.pack}/{icon}")

@@ -40,6 +40,7 @@ class TrackedCity(QFrame):
         self.setFixedHeight(100)
         self.list_sity = list_city
         self.city = city
+        self.image_path = image
 
         self.setStyleSheet("""
             background-color: transparent;
@@ -145,3 +146,7 @@ class TrackedCity(QFrame):
             font-size: 13px;
             background-color: transparent;
         """)
+
+    def update_image(self, image):
+        self.image_path = image
+        self.weather_data["image"] = image

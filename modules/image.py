@@ -34,3 +34,8 @@ class ImageWidget(QLabel):
         )
 
         self.setPixmap(pixmap)
+
+    def set_image_size(self, width, height):
+        self.width_image = width
+        self.height_image = height
+        self.setFixedSize(width, height)

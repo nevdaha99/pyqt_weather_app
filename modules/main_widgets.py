@@ -20,6 +20,7 @@ is_dark = config["is_dark"]
 
 class MainContainer(QFrame):
     size_changed = pyqtSignal(str)
+    size_changed1 = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -64,6 +65,8 @@ class MainContainer(QFrame):
 
         self.settings.modal.city_deleted.connect(self.side_panel.remove_city)
         self.settings.modal.size_app.connect(self.size_changed.emit)
+        self.settings.modal.size_app.connect(self.size_changed1.emit)
+        self.settings.modal.pack_changed.connect(self.side_panel.update_pack)
 
         self.search.city_added.connect(self.settings.modal.add_found_city)
 
@@ -77,14 +80,17 @@ class MainContainer(QFrame):
         temp, temp_min, temp_max, description, timezone, time, icon = (
             get_weather_data(selected_city)
         )
+        self.pack = "pack1"
         self.city = CurrentWeatherWidget(
             city=selected_city,
             weather=description,
             temperature=temp,
             max_temperature=temp_max,
             min_temperature=temp_min,
-            image=f"icons/main/{icon}.png",
+            image=f"icons/main/{self.pack}/{icon}.png",
+            icon=icon,
         )
+        self.settings.modal.pack_changed.connect(self.city.update_pack)
         self.main_weather_frame = QFrame()
         self.main_weather_frame.setFixedSize(788, 303)
         main_weather_layout = QHBoxLayout(self.main_weather_frame)
@@ -147,6 +153,12 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(788, 46)
             self.main_weather_frame.setFixedSize(788, 303)
+            print(
+                "SCROLL:",
+                self.scroll_panel.size(),
+                "RIGHT:",
+                self.right_frame.size(),
+            )
 
         elif size == "1440x1024":
             self.scroll_panel.setFixedSize(434, 1024)
@@ -154,6 +166,12 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(966, 55)
             self.main_weather_frame.setFixedSize(966, 338)
+            print(
+                "SCROLL:",
+                self.scroll_panel.size(),
+                "RIGHT:",
+                self.right_frame.size(),
+            )
 
         elif size == "1512x982":
             self.scroll_panel.setFixedSize(453, 982)
@@ -161,6 +179,12 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(1019, 55)
             self.main_weather_frame.setFixedSize(1019, 331)
+            print(
+                "SCROLL:",
+                self.scroll_panel.size(),
+                "RIGHT:",
+                self.right_frame.size(),
+            )
 
         elif size == "1728x1117":
             self.scroll_panel.setFixedSize(510, 1117)
@@ -168,15 +192,27 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(1178, 60)
             self.main_weather_frame.setFixedSize(1170, 352)
+            print(
+                "SCROLL:",
+                self.scroll_panel.size(),
+                "RIGHT:",
+                self.right_frame.size(),
+            )
 
         self.side_panel.change_size(size)
         self.city.change_size(size)
         self.time_widget.change_size(size)
         self.forecast_widget.change_size(size)
         self.graphic_widget.change_size(size)
+        print(
+            "EXPECTED:",
+            size,
+            "ACTUAL CONTAINER:",
+            self.size(),
+        )
 
 
 container = MainContainer()
 container.size_changed.connect(window.change_size)
-container.size_changed.connect(container.change_size)
+container.size_changed1.connect(container.change_size)
 window.setCentralWidget(container)

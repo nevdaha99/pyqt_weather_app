@@ -32,4 +32,4 @@ class Window(QMainWindow):
         self.setGeometry(center_x, center_y, width, height)
 
 
-window = Window(width=1200, height=700, title="app")
+window = Window(width=1200, height=800, title="app")
