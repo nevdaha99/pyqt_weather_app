@@ -1,13 +1,42 @@
 {
     "list_city": [
-        "Nadtochiyi",
-        "Днепр",
-        "Харьков",
-        "Запорожье",
-        "Лондон",
-        "Tokio",
-        "Виница"
+        "Dnipro"
     ],
-    "selected_city": "Лондон",
-    "is_dark": false
+    "selected_city": "Dnipro",
+    "is_dark": true,
+    "size": "1200x800",
+    "image_pack": "pack2",
+    "language": "ua",
+    "settings_language": {
+        "ua": {
+            "title": "Налаштування",
+            "search_city_button": "Пошук міста",
+            "app_size_button": "Розмір додатку",
+            "language_button": "Мова додатку",
+            "image_list_button": "Списки зображень",
+            "coordinat_title": "Координати",
+            "coordinat_input": "наприклад: 50.4501, 30.5234",
+            "save_button": "Зберегти",
+            "added_city_label": "Додані міста",
+            "size_title": "Оберіть розмір додатку",
+            "language_title": "Оберіть мову додатку",
+            "list1_title": "Список зображень №1",
+            "list2_title": "Список зображень №2"
+        },
+        "en": {
+            "title": "Settings",
+            "search_city_button": "Search City",
+            "app_size_button": "App Size",
+            "language_button": "App Language",
+            "image_list_button": "Image Lists",
+            "coordinat_title": "Coordinates",
+            "coordinat_input": "e.g.: 50.4501, 30.5234",
+            "save_button": "Save",
+            "added_city_label": "Added Cities",
+            "size_title": "Choose App Size",
+            "language_title": "Choose App Language",
+            "list1_title": "Image List #1",
+            "list2_title": "Image List #2"
+        }
+    }
 }

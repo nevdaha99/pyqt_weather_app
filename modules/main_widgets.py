@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtWidgets import *
 
@@ -16,6 +18,9 @@ from .window import window
 config = get_config()
 selected_city = config["selected_city"]
 is_dark = config["is_dark"]
+lang = config["language"]
+pack = config["image_pack"]
+size = config["size"]
 
 
 class MainContainer(QFrame):
@@ -62,11 +67,20 @@ class MainContainer(QFrame):
         self.settings.modal.coordinates_changed.connect(
             self.side_panel.add_city_by_coords
         )
+        self.settings.modal.lang_changed.connect(self.settings.update_lang)
+        self.settings.modal.lang_changed.connect(self.search.update_lang)
+        self.settings.update_lang(lang)
+        self.search.update_lang(lang)
+        self.settings.modal.update_language()
+        # self.settings.modal.selected_city.connect(self.change_selected_city)
+        self.settings.modal.selected_city.connect(self.side_panel.select_city)
 
         self.settings.modal.city_deleted.connect(self.side_panel.remove_city)
         self.settings.modal.size_app.connect(self.size_changed.emit)
         self.settings.modal.size_app.connect(self.size_changed1.emit)
         self.settings.modal.pack_changed.connect(self.side_panel.update_pack)
+        self.settings.modal.lang_changed.connect(self.side_panel.update_lang)
+        self.side_panel.update_lang(lang)
 
         self.search.city_added.connect(self.settings.modal.add_found_city)
 
@@ -78,9 +92,14 @@ class MainContainer(QFrame):
         self.right_layout.addWidget(self.header_frame)
 
         temp, temp_min, temp_max, description, timezone, time, icon = (
-            get_weather_data(selected_city)
+            get_weather_data(selected_city, lang)
         )
-        self.pack = "pack1"
+        if not icon:
+            icon = "01d"
+        if not timezone:
+            timezone = timedelta(seconds=0)
+        window.change_bg_color(icon)
+        self.pack = pack
         self.city = CurrentWeatherWidget(
             city=selected_city,
             weather=description,
@@ -90,6 +109,7 @@ class MainContainer(QFrame):
             image=f"icons/main/{self.pack}/{icon}.png",
             icon=icon,
         )
+        self.city.update_pack(self.pack)
         self.settings.modal.pack_changed.connect(self.city.update_pack)
         self.main_weather_frame = QFrame()
         self.main_weather_frame.setFixedSize(788, 303)
@@ -100,8 +120,13 @@ class MainContainer(QFrame):
         main_weather_layout.addWidget(
             self.city,
         )
+        self.side_panel.city_selected.connect(self.update_background)
+        self.settings.modal.lang_changed.connect(self.city.update_lang)
+        self.city.update_lang(lang)
         self.time_widget = TimeWidget(timezone)
         self.side_panel.city_selected.connect(self.time_widget.update_city)
+        self.settings.modal.lang_changed.connect(self.time_widget.update_lang)
+        self.time_widget.update_lang(lang)
         main_weather_layout.addWidget(
             self.time_widget,
         )
@@ -111,13 +136,24 @@ class MainContainer(QFrame):
         self.side_panel.city_selected.connect(
             self.forecast_widget.update_forecast
         )
+        self.settings.modal.lang_changed.connect(
+            self.forecast_widget.update_lang
+        )
+        self.forecast_widget.update_lang(lang)
         self.right_layout.addWidget(
             self.forecast_widget, alignment=Qt.AlignmentFlag.AlignHCenter
         )
-        self.graphic_widget = GraphicForecast(selected_city)
+        if selected_city:
+            self.graphic_widget = GraphicForecast(selected_city)
+        else:
+            self.graphic_widget = GraphicForecast(None)
         self.side_panel.city_selected.connect(
             self.graphic_widget.update_graphic
         )
+        self.settings.modal.lang_changed.connect(
+            self.graphic_widget.update_lang
+        )
+        self.graphic_widget.update_lang(lang)
         self.right_layout.addWidget(
             self.graphic_widget, alignment=Qt.AlignmentFlag.AlignHCenter
         )
@@ -153,12 +189,6 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(788, 46)
             self.main_weather_frame.setFixedSize(788, 303)
-            print(
-                "SCROLL:",
-                self.scroll_panel.size(),
-                "RIGHT:",
-                self.right_frame.size(),
-            )
 
         elif size == "1440x1024":
             self.scroll_panel.setFixedSize(434, 1024)
@@ -166,12 +196,6 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(966, 55)
             self.main_weather_frame.setFixedSize(966, 338)
-            print(
-                "SCROLL:",
-                self.scroll_panel.size(),
-                "RIGHT:",
-                self.right_frame.size(),
-            )
 
         elif size == "1512x982":
             self.scroll_panel.setFixedSize(453, 982)
@@ -179,12 +203,6 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(1019, 55)
             self.main_weather_frame.setFixedSize(1019, 331)
-            print(
-                "SCROLL:",
-                self.scroll_panel.size(),
-                "RIGHT:",
-                self.right_frame.size(),
-            )
 
         elif size == "1728x1117":
             self.scroll_panel.setFixedSize(510, 1117)
@@ -192,27 +210,28 @@ class MainContainer(QFrame):
 
             self.header_frame.setFixedSize(1178, 60)
             self.main_weather_frame.setFixedSize(1170, 352)
-            print(
-                "SCROLL:",
-                self.scroll_panel.size(),
-                "RIGHT:",
-                self.right_frame.size(),
-            )
 
         self.side_panel.change_size(size)
         self.city.change_size(size)
         self.time_widget.change_size(size)
         self.forecast_widget.change_size(size)
         self.graphic_widget.change_size(size)
-        print(
-            "EXPECTED:",
-            size,
-            "ACTUAL CONTAINER:",
-            self.size(),
-        )
+
+    def update_background(self, data):
+        icon = data["icon"]
+        window.change_bg_color(icon)
+
+    def change_selected_city(self, city):
+        if not city:
+            return
+
+        self.selected_city = city
+        self.update_weather(city)
 
 
 container = MainContainer()
 container.size_changed.connect(window.change_size)
 container.size_changed1.connect(container.change_size)
+window.change_size(size)
+container.change_size(size)
 window.setCentralWidget(container)

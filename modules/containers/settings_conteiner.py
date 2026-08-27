@@ -8,7 +8,7 @@ from ..image import ImageWidget
 class SettingsConteiner(QWidget):
     def __init__(self):
         super().__init__()
-        self.settings = ImageWidget(36, 36, "dark_settings.png")
+        self.settings = ImageWidget(16, 16, "dark_settings.png")
         self.settings_label = QLabel("Налаштування")
         self.settings_label.setStyleSheet("background: transparent")
         self.settings.setStyleSheet("background: transparent")
@@ -38,3 +38,9 @@ class SettingsConteiner(QWidget):
             self.settings_label.setStyleSheet(
                 "background: transparent; color: black;"
             )
+
+    def update_lang(self, lang):
+        if lang == "ua":
+            self.settings_label.setText("Налаштування")
+        else:
+            self.settings_label.setText("Settings")

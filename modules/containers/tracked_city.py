@@ -6,10 +6,14 @@ from PyQt6.QtWidgets import (
     QLabel,
 )
 
+from modules.utils.get_weather import get_weather_data
 from modules.utils.saving_config import get_config, save_config
 
 config = get_config()
 is_dark = config["is_dark"]
+lang = config["language"]
+size = config["size"]
+image_pack = config["image_pack"]
 
 
 class TrackedCity(QFrame):
@@ -24,6 +28,7 @@ class TrackedCity(QFrame):
         max_temperature: int,
         min_temperature: int,
         image,
+        icon,
         selected: bool,
         layout,
         list_city,
@@ -36,11 +41,14 @@ class TrackedCity(QFrame):
             "max_temperature": max_temperature,
             "min_temperature": min_temperature,
             "image": image,
+            "icon": icon,
         }
         self.setFixedHeight(100)
         self.list_sity = list_city
         self.city = city
         self.image_path = image
+        self.max_temperature = max_temperature
+        self.min_temperature = min_temperature
 
         self.setStyleSheet("""
             background-color: transparent;
@@ -104,7 +112,14 @@ class TrackedCity(QFrame):
                 background-color: transparent;
             }
         """)
-        save_config(self.list_sity, self.weather_data["city"], is_dark)
+        save_config(
+            self.list_sity,
+            self.weather_data["city"],
+            is_dark,
+            size,
+            image_pack,
+            lang,
+        )
         self.city_selected.emit(self.weather_data)
 
     def change_theme(self, is_dark: bool):
@@ -150,3 +165,28 @@ class TrackedCity(QFrame):
     def update_image(self, image):
         self.image_path = image
         self.weather_data["image"] = image
+
+    def update_language(self, lang):
+        (
+            temp,
+            temp_min,
+            temp_max,
+            description,
+            time_zone,
+            time,
+            icon,
+        ) = get_weather_data(self.city, lang)
+
+        if temp is None:
+            return
+
+        self.weather_data["weather"] = description
+        self.weather_label.setText(description)
+
+        self.max_temperature = temp_max
+        self.min_temperature = temp_min
+
+        if lang == "ua":
+            self.min_max_label.setText(f"Макс.:{temp_max}°, мін.:{temp_min}°")
+        else:
+            self.min_max_label.setText(f"max:{temp_max}°, min:{temp_min}°")

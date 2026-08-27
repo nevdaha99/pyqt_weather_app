@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from modules.utils.get_weather import get_weather_data
+
 from ..image import ImageWidget
 
 
@@ -37,17 +39,20 @@ class CurrentWeatherWidget(QFrame):
             }
         """)
         self.pack = "pack1"
+        self.city = city
+        self.max_temperature = max_temperature
+        self.min_temperature = min_temperature
         layout = QVBoxLayout(self)
         layout.setContentsMargins(20, 15, 20, 15)
 
         self.location_image = ImageWidget(16, 16, "dark_track.png")
-        location_label = QLabel("Поточна позиція")
+        self.location_label = QLabel("Поточна позиція")
         location_top_widget = QWidget()
         location_top_layout = QHBoxLayout(location_top_widget)
         location_top_layout.setContentsMargins(0, 0, 0, 0)
         location_top_layout.setSpacing(16)
         location_top_layout.addWidget(self.location_image)
-        location_top_layout.addWidget(location_label)
+        location_top_layout.addWidget(self.location_label)
         location_top_layout.addStretch()
         self.line = QFrame()
         self.line.setFrameShape(QFrame.Shape.HLine)
@@ -62,7 +67,10 @@ class CurrentWeatherWidget(QFrame):
         location_layout.addWidget(location_top_widget)
         location_layout.addWidget(self.line)
 
-        self.city_label = QLabel(city)
+        if city:
+            self.city_label = QLabel(city)
+        else:
+            self.city_label = QLabel("?")
         self.city_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.city_label.setStyleSheet("""
             font-size: 34px;
@@ -79,7 +87,11 @@ class CurrentWeatherWidget(QFrame):
             margin-top: -150px;
             margin-left: -40px;
         """)
-        self.temperature_label = QLabel(f"{temperature}°")
+        if temperature:
+            self.temperature_label = QLabel(f"{temperature}°")
+        else:
+            self.temperature_label = QLabel("?°")
+
         self.temperature_label.setStyleSheet("""
             font-size: 70px;
             font-weight: bold;
@@ -102,9 +114,12 @@ class CurrentWeatherWidget(QFrame):
             font-size: 20px;
             font-weight: bold;
         """)
-        self.min_max_label = QLabel(
-            f"Макс.:{max_temperature}°, мін.:{min_temperature}°"
-        )
+        if max_temperature:
+            self.min_max_label = QLabel(
+                f"Макс.:{max_temperature}°, мін.:{min_temperature}°"
+            )
+        else:
+            self.min_max_label = QLabel("Макс.:?°, мін.:?°")
         self.min_max_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.min_max_label.setStyleSheet("font-size: 16px;")
         weather_widget = QWidget()
@@ -141,7 +156,6 @@ class CurrentWeatherWidget(QFrame):
             f"мін.:{data['min_temperature']}°"
         )
         self.image_label.set_image(data["image"])
-        # self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")
 
     def change_theme(self, is_dark: bool):
         if is_dark:
@@ -183,23 +197,6 @@ class CurrentWeatherWidget(QFrame):
         elif size == "1728x1117":
             self.setFixedSize(553, 352)
 
-    # def update_pack(self, pack_name):
-    #     self.pack = pack_name
-    #     self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")
-    #     if self.pack == "pack1":
-    #         self.image_label.setFixedSize(250, 250)
-    #         self.image_label.setStyleSheet("""
-    #         background: transparent;
-    #         margin-top: -150px;
-    #         margin-left: -40px;
-    #     """)
-
-    #     elif self.pack == "pack2":
-    #         self.image_label.setFixedSize(100, 100)
-    #         self.image_label.setStyleSheet("""
-    #         background: transparent;
-    #         margin-left: -80px;
-    #     """)
     def update_pack(self, pack_name):
         self.pack = pack_name
         if self.pack == "pack1":
@@ -218,3 +215,35 @@ class CurrentWeatherWidget(QFrame):
                 margin-left: 20px;
             """)
         self.image_label.set_image(f"icons/main/{self.pack}/{self.icon}.png")
+
+    def update_lang(self, lang):
+        (
+            temp,
+            temp_min,
+            temp_max,
+            description,
+            time_zone,
+            time,
+            icon,
+        ) = get_weather_data(self.city, lang)
+
+        # if temp is None:
+        #     return
+
+        self.weather_label.setText(description)
+        if lang == "ua":
+            self.location_label.setText("Поточна позиція")
+            if self.max_temperature:
+                self.min_max_label.setText(
+                    f"Макс.:{self.max_temperature}°, мін.:{self.min_temperature}°"
+                )
+            else:
+                self.min_max_label.setText("Макс.:?°, мін.:?°")
+        else:
+            self.location_label.setText("Current position")
+            if self.max_temperature:
+                self.min_max_label.setText(
+                    f"max.:{self.max_temperature}°, min.:{self.min_temperature}°"
+                )
+            else:
+                self.min_max_label.setText("max.:?°, min.:?°")

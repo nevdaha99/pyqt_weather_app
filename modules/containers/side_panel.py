@@ -10,6 +10,8 @@ config = get_config()
 list_city = config["list_city"]
 selected = config["selected_city"]
 is_dark = config["is_dark"]
+image_pack = config["image_pack"]
+size = config["size"]
 
 
 class SidePanel(QWidget):
@@ -27,6 +29,8 @@ class SidePanel(QWidget):
         self.left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.pack = "pack1"
         self.is_dark = is_dark
+        self.lang = config["language"]
+
         self.theme = ImageWidget(
             52,
             24,
@@ -48,7 +52,7 @@ class SidePanel(QWidget):
         if city in self.added_city:
             return
         temp, temp_min, temp_max, description, time_zone, time, icon = (
-            get_weather_data(city)
+            get_weather_data(city, self.lang)
         )
         if temp == None:
             return
@@ -59,6 +63,7 @@ class SidePanel(QWidget):
             temperature=temp,
             max_temperature=temp_max,
             min_temperature=temp_min,
+            icon=icon,
             image=f"icons/main/{self.pack}/{icon}.png",
             selected=city == config["selected_city"],
             layout=self.left_layout,
@@ -97,6 +102,7 @@ class SidePanel(QWidget):
             temperature=temp,
             max_temperature=temp_max,
             min_temperature=temp_min,
+            icon=icon,
             image=f"icons/main/{self.pack}/{icon}.png",
             selected=city == config["selected_city"],
             layout=self.left_layout,
@@ -126,6 +132,9 @@ class SidePanel(QWidget):
             current_config["list_city"],
             current_config["selected_city"],
             self.is_dark,
+            size,
+            image_pack,
+            self.lang,
         )
 
         self.theme_changed.emit(self.is_dark)
@@ -170,3 +179,17 @@ class SidePanel(QWidget):
             icon = city_widget.weather_data["image"].split("/")[-1]
 
             city_widget.update_image(f"icons/main/{self.pack}/{icon}")
+
+    def update_lang(self, lang):
+        self.lang = lang
+        for city_widget in self.city_widgets:
+            city_widget.update_language(lang)
+
+    def select_city(self, city_name: str):
+        if not city_name:
+            return
+
+        for city_widget in self.city_widgets:
+            if city_widget.city == city_name:
+                city_widget.mousePressEvent(None)
+                break

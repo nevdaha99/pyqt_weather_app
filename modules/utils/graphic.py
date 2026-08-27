@@ -1,8 +1,8 @@
 from .get_weather import get_weather
 
 
-def get_graphic(city_name):
-    data = get_weather(city_name, True)
+def get_graphic(city_name, lang: str):
+    data = get_weather(city_name, True, lang)
     temp_list = []
     height_list = []
     for weather in data["list"]:

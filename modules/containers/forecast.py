@@ -12,6 +12,9 @@ from PyQt6.QtWidgets import (
 
 from modules.image import ImageWidget
 from modules.utils.get_weather import get_forecast_data
+from modules.utils.saving_config import get_config
+
+config = get_config()
 
 
 class Forecast(QFrame):
@@ -30,7 +33,9 @@ class Forecast(QFrame):
                 color: white;
             }
         """)
-        weather_list, description = get_forecast_data(city_name)
+        self.city_name = city_name
+        self.lang = config["language"]
+        weather_list, description = get_forecast_data(city_name, self.lang)
         main_layout = QVBoxLayout(self)
         self.forecast_label = QLabel(description)
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -52,38 +57,43 @@ class Forecast(QFrame):
         self.left_button = ImageWidget(16, 16, "dark_left.png")
         self.right_button = ImageWidget(16, 16, "dark_right.png")
         main_layout.addWidget(self.control_frame)
+        self.scroll_value = 62
 
         self.left_button.mousePressEvent = lambda e: (
-            scroll.horizontalScrollBar().setValue(
-                scroll.horizontalScrollBar().value() - 62
+            self.scroll_bar.horizontalScrollBar().setValue(
+                self.scroll_bar.horizontalScrollBar().value()
+                - self.scroll_value
             )
         )
 
         self.right_button.mousePressEvent = lambda e: (
-            scroll.horizontalScrollBar().setValue(
-                scroll.horizontalScrollBar().value() + 62
+            self.scroll_bar.horizontalScrollBar().setValue(
+                self.scroll_bar.horizontalScrollBar().value()
+                + self.scroll_value
             )
         )
 
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setFixedSize(676, 82)
-        scroll.setStyleSheet("background-color: transparent")
-        scroll.setVerticalScrollBarPolicy(
+        self.scroll_bar = QScrollArea()
+        self.scroll_bar.setWidgetResizable(True)
+        self.scroll_bar.setFixedSize(676, 82)
+        self.scroll_bar.setStyleSheet("background-color: transparent")
+        self.scroll_bar.setVerticalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
-        scroll.setHorizontalScrollBarPolicy(
+        self.scroll_bar.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
+        self.scroll_bar.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        forecast_frame = QFrame()
-        self.forecast_layout = QHBoxLayout(forecast_frame)
+        self.forecast_frame = QFrame()
+        self.forecast_layout = QHBoxLayout(self.forecast_frame)
+        self.forecast_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.forecast_layout.setSpacing(17)
-        forecast_frame.setFixedHeight(82)
-        forecast_frame.setStyleSheet("background-color: transparent")
-        scroll.setWidget(forecast_frame)
+        self.forecast_frame.setFixedHeight(82)
+        self.forecast_frame.setStyleSheet("background-color: transparent")
+        self.scroll_bar.setWidget(self.forecast_frame)
         control_layout.addWidget(self.left_button)
-        control_layout.addWidget(scroll)
+        control_layout.addWidget(self.scroll_bar)
         control_layout.addWidget(self.right_button)
         self.add_forecast(weather_list)
 
@@ -118,7 +128,9 @@ class Forecast(QFrame):
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
-        self.weather_list, description = get_forecast_data(city_name)
+        self.weather_list, description = get_forecast_data(
+            city_name, self.lang
+        )
         self.forecast_label.setText(description)
         self.add_forecast(self.weather_list)
 
@@ -167,15 +179,30 @@ class Forecast(QFrame):
         if size == "1200x800":
             self.setFixedSize(788, 157)
             self.control_frame.setFixedSize(756, 82)
+            self.scroll_bar.setFixedSize(676, 82)
+            self.scroll_value = 62
 
         elif size == "1440x1024":
             self.setFixedSize(943, 183)
             self.control_frame.setFixedSize(911, 108)
+            self.scroll_bar.setFixedSize(831, 82)  # 824
+            self.scroll_value = 62
 
         elif size == "1512x982":
             self.setFixedSize(990, 178)
             self.control_frame.setFixedSize(958, 103)
+            self.scroll_bar.setFixedSize(878, 82)
+            self.scroll_value = 62
 
         elif size == "1728x1117":
             self.setFixedSize(1130, 194)
             self.control_frame.setFixedSize(1098, 119)
+            self.scroll_bar.setFixedSize(1018, 82)
+            self.scroll_value = 62
+
+    def update_lang(self, lang):
+        self.lang = lang
+        self.weather_list, description = get_forecast_data(
+            self.city_name, lang
+        )
+        self.forecast_label.setText(description)

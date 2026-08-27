@@ -13,6 +13,10 @@ from PyQt6.QtWidgets import (
 from modules.utils.get_weather import get_weather_data
 
 from ..image import ImageWidget
+from ..utils.saving_config import get_config
+
+config = get_config()
+lang = config["language"]
 
 
 class TimeWidget(QFrame):
@@ -35,9 +39,9 @@ class TimeWidget(QFrame):
                 color: white;
             }
         """)
-        current_time = datetime.now(timezone.utc) + time_zone
+        self.current_time = datetime.now(timezone.utc) + time_zone
 
-        self.days = {
+        self.days_ua = {
             0: "Понеділок",
             1: "Вівторок",
             2: "Середа",
@@ -46,6 +50,16 @@ class TimeWidget(QFrame):
             5: "Субота",
             6: "Неділя",
         }
+
+        self.days_en = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
 
         self.today_label = QLabel("Сьогодні")
         self.today_label.setStyleSheet("font-size: 14px;")
@@ -62,12 +76,12 @@ class TimeWidget(QFrame):
         today_layout.addWidget(self.today_label)
         today_layout.addWidget(self.line)
 
-        self.day_label = QLabel(self.days[current_time.weekday()])
+        self.day_label = QLabel(self.days_ua[self.current_time.weekday()])
         self.day_label.setStyleSheet("""
             font-size: 24px;
             font-weight: bold;
         """)
-        self.date_label = QLabel(current_time.strftime("%d.%m.%Y"))
+        self.date_label = QLabel(self.current_time.strftime("%d.%m.%Y"))
         self.date_label.setStyleSheet("""
             font-size: 24px;
             font-weight: bold;
@@ -90,7 +104,7 @@ class TimeWidget(QFrame):
                 }
             """)
 
-        self.time_label = QLabel(current_time.strftime("%H:%M"))
+        self.time_label = QLabel(self.current_time.strftime("%H:%M"))
         self.time_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.time_label.setStyleSheet("""
             color: white;
@@ -121,12 +135,15 @@ class TimeWidget(QFrame):
     def update_city(self, weather_data):
         city = weather_data["city"]
         temp, temp_min, temp_max, description, time_zone, time, icon = (
-            get_weather_data(city)
+            get_weather_data(city, lang)
         )
         current_time = datetime.now(timezone.utc) + time_zone
         self.date_label.setText(current_time.strftime("%d.%m.%Y"))
         self.time_label.setText(time)
-        self.day_label.setText(self.days[current_time.weekday()])
+        if lang == "ua":
+            self.day_label.setText(self.days_ua[current_time.weekday()])
+        else:
+            self.day_label.setText(self.days_en[current_time.weekday()])
 
     def change_theme(self, is_dark: bool):
         if is_dark:
@@ -178,3 +195,11 @@ class TimeWidget(QFrame):
 
         elif size == "1728x1117":
             self.setFixedSize(553, 352)
+
+    def update_lang(self, lang):
+        if lang == "ua":
+            self.today_label.setText("Сьогодні")
+            self.day_label.setText(self.days_ua[self.current_time.weekday()])
+        else:
+            self.today_label.setText("Today")
+            self.day_label.setText(self.days_en[self.current_time.weekday()])

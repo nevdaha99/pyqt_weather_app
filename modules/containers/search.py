@@ -140,3 +140,11 @@ class Search(QFrame):
                 """)
 
             self.search_icon.set_image("light_search.png")
+
+    def update_lang(self, lang):
+        if lang == "ua":
+            self.add_text.setText("Додати")
+            self.search.setPlaceholderText("Пошук")
+        else:
+            self.add_text.setText("Add")
+            self.search.setPlaceholderText("Search")

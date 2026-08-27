@@ -39,3 +39,14 @@ class ImageWidget(QLabel):
         self.width_image = width
         self.height_image = height
         self.setFixedSize(width, height)
+
+    def change_size(self, width, height):
+        self.set_image_size(width, height)
+        self.setPixmap(
+            self.pixmap().scaled(
+                width,
+                height,
+                Qt.AspectRatioMode.IgnoreAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+        )

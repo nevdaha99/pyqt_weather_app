@@ -10,6 +10,9 @@ from PyQt6.QtWidgets import (
 
 from modules.image import ImageWidget
 from modules.utils.graphic import get_graphic
+from modules.utils.saving_config import get_config
+
+config = get_config()
 
 
 class GraphicForecast(QFrame):
@@ -27,6 +30,7 @@ class GraphicForecast(QFrame):
                 color: white;
             }
         """)
+        self.lang = config["language"]
         main_layout = QVBoxLayout(self)
         self.forecast_label = QLabel("Прогноз на 5 днів")
         main_layout.setContentsMargins(16, 16, 16, 16)
@@ -39,36 +43,37 @@ class GraphicForecast(QFrame):
         main_layout.addWidget(self.forecast_label)
         main_layout.addWidget(self.line)
 
-        graphic_frame = QFrame()
-        graphic_layout = QHBoxLayout(graphic_frame)
-        graphic_frame.setStyleSheet("background-color: transparent")
+        self.graphic_frame = QFrame()
+        graphic_layout = QHBoxLayout(self.graphic_frame)
+        self.graphic_frame.setStyleSheet("background-color: transparent")
         graphic_layout.setContentsMargins(0, 0, 0, 0)
-        graphic_frame.setFixedSize(755, 106)
-        graphic_layout.setSpacing(6)
-        column_frame = QFrame()
-        column_frame.setFixedSize(725, 106)
-        self.column_layout = QHBoxLayout(column_frame)
+        self.graphic_frame.setFixedSize(755, 106)
+        graphic_layout.setSpacing(10)
+        self.column_frame = QFrame()
+        self.column_frame.setFixedSize(725, 106)
+        self.column_layout = QHBoxLayout(self.column_frame)
         self.grid = ImageWidget(725, 106, "grid.png")
         self.column_layout.setContentsMargins(0, 0, 0, 0)
         self.column_layout.setSpacing(3)
-        scale_frame = QFrame()
-        self.scale_layout = QVBoxLayout(scale_frame)
-        scale_frame.setFixedSize(22, 106)
+        self.scale_frame = QFrame()
+        self.scale_layout = QVBoxLayout(self.scale_frame)
+        self.scale_frame.setFixedSize(35, 106)
         self.scale_layout.setContentsMargins(0, 0, 0, 0)
 
-        stack = QWidget()
-        stack.setFixedSize(725, 106)
-        stack_layout = QStackedLayout(stack)
+        self.stack = QWidget()
+        self.stack.setFixedSize(725, 106)
+        stack_layout = QStackedLayout(self.stack)
         stack_layout.setStackingMode(QStackedLayout.StackingMode.StackAll)
-        stack_layout.addWidget(column_frame)
+        stack_layout.addWidget(self.column_frame)
         stack_layout.addWidget(self.grid)
 
-        graphic_layout.addWidget(stack)
-        graphic_layout.addWidget(scale_frame)
-        main_layout.addWidget(graphic_frame)
+        graphic_layout.addWidget(self.stack)
+        graphic_layout.addWidget(self.scale_frame)
+        main_layout.addWidget(self.graphic_frame)
 
-        min_temp, list_height = get_graphic(city_name)
-        self.add_graphic(min_temp, list_height)
+        if city_name:
+            min_temp, list_height = get_graphic(city_name, self.lang)
+            self.add_graphic(min_temp, list_height)
 
     def add_graphic(self, min_temp, list_height):
         for i in range(8):
@@ -109,7 +114,7 @@ class GraphicForecast(QFrame):
             widget = item.widget()
             if widget is not None:
                 widget.deleteLater()
-        min_temp, list_height = get_graphic(city_name)
+        min_temp, list_height = get_graphic(city_name, self.lang)
         self.add_graphic(min_temp, list_height)
 
     def change_theme(self, is_dark: bool):
@@ -142,12 +147,32 @@ class GraphicForecast(QFrame):
     def change_size(self, size: str):
         if size == "1200x800":
             self.setFixedSize(788, 197)
+            width = 725
+            height = 106
 
         elif size == "1440x1024":
             self.setFixedSize(943, 215)
+            width = 880
+            height = 120
 
         elif size == "1512x982":
             self.setFixedSize(990, 211)
+            width = 925
+            height = 116
 
         elif size == "1728x1117":
             self.setFixedSize(1130, 222)
+            width = 1060
+            height = 127
+
+        self.grid.change_size(width, height)
+        self.column_frame.setFixedSize(width, height)
+        self.stack.setFixedSize(width, height)
+        self.graphic_frame.setFixedSize(width + 30, height)
+        self.scale_frame.setFixedSize(35, height)
+
+    def update_lang(self, lang):
+        if lang == "ua":
+            self.forecast_label.setText("Прогноз на 5 днів")
+        else:
+            self.forecast_label.setText("5-day forecast")
