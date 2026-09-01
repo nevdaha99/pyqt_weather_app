@@ -1,3 +1,7 @@
+import ctypes
+from ctypes import wintypes
+
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import *
 
 from .app import app
@@ -6,28 +10,24 @@ from .app import app
 class Window(QMainWindow):
     def __init__(self, width, height, title):
         super().__init__()
-        screen_width = app.primaryScreen().size().width()
-        screen_height = app.primaryScreen().size().height()
-        center_x = (screen_width - width) // 2
-        center_y = (screen_height - height) // 2
-        self.setGeometry(center_x, center_y, width, height)
+        self.DWMWA_CAPTION_COLOR = 35
+        self.change_size(f"{width}x{height}")
         self.setWindowTitle(title)
-        # self.setStyleSheet("""
-        #     QFrame {
-        #         background: qlineargradient(
-        #             x1:1, y1:0,
-        #             x2:0, y2:1,
-        #             stop:0 #FFDF56,
-        #             stop:1 #87CEFA
-        #         );
-        #     }
-        # """)
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+            "MyWeatherApp"
+        )
+        self.setWindowIcon(QIcon("images/icon.png"))
+
         self.change_bg_color("01d")
 
     def change_size(self, size: str):
         width, height = map(int, size.split("x"))
         screen_width = app.primaryScreen().size().width()
         screen_height = app.primaryScreen().size().height()
+        if screen_width < width:
+            width = screen_width
+        if screen_height - 75 < height:
+            height = screen_height - 75
         center_x = (screen_width - width) // 2
         center_y = (screen_height - height) // 2
         self.setGeometry(center_x, center_y, width, height)
@@ -192,13 +192,59 @@ class Window(QMainWindow):
             """,
         }
 
+        titlebar_colors = {
+            "01d": "#FFDF56",
+            "02d": "#FFDF56",
+            "01n": "#8A2BE2",
+            "02n": "#8A2BE2",
+            "03d": "#FFD27F",
+            "03n": "#8A2BE2",
+            "04d": "#808080",
+            "04n": "#8A2BE2",
+            "09d": "#4A4A4A",
+            "09n": "#4A4A4A",
+            "10d": "#4A4A4A",
+            "10n": "#4A4A4A",
+            "11d": "#4A4A4A",
+            "11n": "#4A4A4A",
+            "13d": "#FFFFFF",
+            "13n": "#AEBED0",
+            "50d": "#C5C5C5",
+            "50n": "#707070",
+        }
+
         background = backgrounds.get(icon, backgrounds["01d"])
+        titlebar_color = titlebar_colors.get(icon, "#FFDF56")
 
         self.setStyleSheet(f"""
             QMainWindow {{
                 background: {background};
             }}
         """)
+        self.set_titlebar_color(self, titlebar_color)
+
+    def set_titlebar_color(self, window, color):
+        """
+        Меняет цвет верхней панели окна Windows.
+        color: строка вида "#FFDF56"
+        """
+
+        color = color.lstrip("#")
+
+        r = int(color[0:2], 16)
+        g = int(color[2:4], 16)
+        b = int(color[4:6], 16)
+
+        color_ref = r | (g << 8) | (b << 16)
+
+        hwnd = int(window.winId())
+
+        ctypes.windll.dwmapi.DwmSetWindowAttribute(
+            wintypes.HWND(hwnd),
+            self.DWMWA_CAPTION_COLOR,
+            ctypes.byref(wintypes.DWORD(color_ref)),
+            ctypes.sizeof(wintypes.DWORD),
+        )
 
     def closeEvent(self, event):
         container = self.centralWidget()
@@ -209,4 +255,4 @@ class Window(QMainWindow):
         event.accept()
 
 
-window = Window(width=1200, height=800, title="app")
+window = Window(width=1200, height=800, title="weather app")

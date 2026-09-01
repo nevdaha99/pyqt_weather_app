@@ -112,6 +112,11 @@ class TrackedCity(QFrame):
                 background-color: transparent;
             }
         """)
+        config = get_config()
+        is_dark = config["is_dark"]
+        size = config["size"]
+        lang = config["language"]
+        image_pack = config["image_pack"]
         save_config(
             self.list_sity,
             self.weather_data["city"],

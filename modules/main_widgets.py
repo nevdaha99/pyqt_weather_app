@@ -72,7 +72,6 @@ class MainContainer(QFrame):
         self.settings.update_lang(lang)
         self.search.update_lang(lang)
         self.settings.modal.update_language()
-        # self.settings.modal.selected_city.connect(self.change_selected_city)
         self.settings.modal.selected_city.connect(self.side_panel.select_city)
 
         self.settings.modal.city_deleted.connect(self.side_panel.remove_city)

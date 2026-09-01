@@ -27,7 +27,7 @@ class SidePanel(QWidget):
         self.left_layout.setSpacing(10)
         self.left_layout.setContentsMargins(20, 20, 20, 20)
         self.left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.pack = "pack1"
+        self.pack = image_pack
         self.is_dark = is_dark
         self.lang = config["language"]
 
@@ -133,7 +133,7 @@ class SidePanel(QWidget):
             current_config["selected_city"],
             self.is_dark,
             size,
-            image_pack,
+            current_config["image_pack"],
             self.lang,
         )
 

@@ -227,9 +227,6 @@ class CurrentWeatherWidget(QFrame):
             icon,
         ) = get_weather_data(self.city, lang)
 
-        # if temp is None:
-        #     return
-
         self.weather_label.setText(description)
         if lang == "ua":
             self.location_label.setText("Поточна позиція")
